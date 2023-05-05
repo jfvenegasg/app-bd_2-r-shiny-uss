@@ -1,7 +1,7 @@
-# get shiny server plus tidyverse packages image
+# Descarga de una version de r del paquete tidyverse
 FROM rocker/shiny-verse:latest
 
-# system libraries of general use
+# Librerias de uso general
 RUN apt-get update && apt-get install -y \
     curl \
     sudo \
@@ -12,33 +12,32 @@ RUN apt-get update && apt-get install -y \
     libxt-dev \
     libssl-dev \
     libssh2-1-dev\
-    ## clean up
+    ## Limpieza
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/ \
     && rm -rf /tmp/downloaded_packages/ /tmp/*.rds
 
-# install R packages required 
-# (change it depending on the packages you need)
+# Instalar paquetes de r que sean necesarios
 RUN R -e "install.packages('shiny', repos='http://cran.rstudio.com/')"
 RUN R -e "install.packages('shinydashboard', repos='http://cran.rstudio.com/')"
 RUN R -e "install.packages('shinydashboardPlus', repos='http://cran.rstudio.com/')"
 RUN R -e "install.packages('shinythemes', repos='http://cran.rstudio.com/')"
 
-# clean up
+# Limpieza
 RUN rm -rf /tmp/downloaded_packages/ /tmp/*.rds
 
-# Copy configuration files into the Docker image
+# Copiar archivos de configuracion en la imagen docker
 COPY shiny-server.conf  /etc/shiny-server/shiny-server.conf
 
-# Copy shiny app into the Docker image
+# Copiar shiny app en la imagen docker
 COPY mi_app /srv/shiny-server/
 
 RUN rm /srv/shiny-server/index.html
 
-# Make the ShinyApp available at port 5000
+# Habilitar el puerto 5000 para la shiny app
 EXPOSE 5000
 
-# Copy shiny app execution file into the Docker image
+# Copiar el archivo de ejecucion de la shiny app en la imagen docker
 COPY shiny-server.sh /usr/bin/shiny-server.sh
 
 USER shiny

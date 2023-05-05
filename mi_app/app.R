@@ -13,13 +13,13 @@ library(shiny)
 ui <- fluidPage(
 
     # Application title
-    titlePanel("Old Faithful Geyser Data"),
-
+    titlePanel("Esta es una aplicación de demostración desarrollada con la libreria shiny en R"),
+    fluidRow(imageOutput("imagen")),
     # Sidebar with a slider input for number of bins 
-    sidebarLayout(
+    fluidRow(sidebarLayout(
         sidebarPanel(
             sliderInput("bins",
-                        "Number of bins:",
+                        "Numero de columnas:",
                         min = 1,
                         max = 50,
                         value = 30)
@@ -29,12 +29,18 @@ ui <- fluidPage(
         mainPanel(
            plotOutput("distPlot")
         )
-    )
+    ))
 )
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-
+    
+    output$imagen <- renderImage({
+    
+    list(src = "uss.png")
+    
+    }, deleteFile = F)
+    
     output$distPlot <- renderPlot({
         # generate bins based on input$bins from ui.R
         x    <- faithful[, 2]
