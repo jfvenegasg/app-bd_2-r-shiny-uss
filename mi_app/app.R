@@ -8,6 +8,8 @@
 #
 
 library(shiny)
+library(bigrquery)
+bigrquery::bq_auth(path ="shiny-apps-385622-08e5b9820326.json")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -29,7 +31,8 @@ ui <- fluidPage(
         mainPanel(
            plotOutput("distPlot")
         )
-    ))
+    )),
+    fluidRow(actionButton(inputId = "boton",label =  "Descarga"),dataTableOutput("datos_bigquery"))
 )
 
 # Define server logic required to draw a histogram
@@ -51,6 +54,19 @@ server <- function(input, output) {
              xlab = 'Waiting time to next eruption (in mins)',
              main = 'Histogram of waiting times')
     })
+    
+    project_id <- "shiny-apps-385622"
+    sql<-"SELECT * from `bigquery-public-data.austin_bikeshare.bikeshare_trips`"
+    
+    respuesta <- reactiveValues(data=NULL)
+    
+    observeEvent(input$boton, {
+      consulta <- bigrquery::bq_project_query(project_id, sql)
+      respuesta$datos <-bigrquery::bq_table_download(consulta, n_max = 10)
+    })
+    
+    output$datos_bigquery<-renderDataTable({respuesta$datos    }) 
+    
 }
 
 # Run the application 
