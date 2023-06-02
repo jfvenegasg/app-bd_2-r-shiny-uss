@@ -14,7 +14,7 @@ library(googleCloudStorageR)
 library(echarts4r)
 
 bigrquery::bq_auth(path ="shiny-apps-385622-08e5b9820326.json")
-#googleCloudStorageR::gcs_auth(json_file = "shiny-apps-385622-0553170e693d.json")
+googleCloudStorageR::gcs_auth(json_file = "shiny-apps-385622-0553170e693d.json")
 #googleCloudStorageR::gcs_list_buckets("shiny-apps-385622")
 
 # Define UI for application that draws a histogram
