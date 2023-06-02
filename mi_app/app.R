@@ -8,6 +8,7 @@
 #
 
 library(shiny)
+library(dplyr)
 library(bigrquery)
 library(echarts4r)
 
@@ -34,7 +35,8 @@ ui <- fluidPage(
            plotOutput("distPlot")
         )
     )),
-    fluidRow(actionButton(inputId = "boton",label =  "Descarga"),dataTableOutput("datos_bigquery")),
+    fluidRow(actionButton(inputId = "boton",label =  "Descarga")),
+    fluidRow(dataTableOutput("datos_bigquery")),
     fluidRow(echarts4rOutput("grafico_bigquery"))
 )
 
@@ -58,7 +60,9 @@ server <- function(input, output) {
              main = 'Histogram of waiting times')
     })
     
+    #Aca se define el proyecto que tenemos activo en GCP
     project_id <- "shiny-apps-385622"
+    
     sql<-"SELECT * from `bigquery-public-data.austin_bikeshare.bikeshare_trips` LIMIT 100"
     
     respuesta <- reactiveValues(data=NULL)
@@ -68,14 +72,19 @@ server <- function(input, output) {
       respuesta$datos <-bigrquery::bq_table_download(consulta,n_max = 100)
     })
     
-    output$datos_bigquery<-renderDataTable({respuesta$datos    },options =list(pageLength = 10))
+    output$datos_bigquery<-renderDataTable({respuesta$datos})
     
+    #Aca se genera el grafico,de acuerdo a los datos extraidos en la consulta SQL.
+    #El grafico muestra en el eje x el tipo de suscriptor y en el eje y la duracion en minutos de los viajes
     output$grafico_bigquery<-renderEcharts4r({
       if(is.null(respuesta$datos)==TRUE){
         
       }else{
-        respuesta$datos |>
-          echarts4r::group_by(subscriber_type) |>
+        datos_graficos <- respuesta$datos %>%
+          group_by(subscriber_type) %>%
+          summarise(duration_minutes = sum(duration_minutes))
+        
+        datos_graficos |>
           echarts4r::e_chart(subscriber_type) |>
           echarts4r::e_bar(duration_minutes) |>
           echarts4r::e_theme("walden")  
