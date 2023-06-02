@@ -10,9 +10,12 @@
 library(shiny)
 library(dplyr)
 library(bigrquery)
+library(googleCloudStorageR)
 library(echarts4r)
 
 bigrquery::bq_auth(path ="shiny-apps-385622-08e5b9820326.json")
+#googleCloudStorageR::gcs_auth(json_file = "shiny-apps-385622-0553170e693d.json")
+#googleCloudStorageR::gcs_list_buckets("shiny-apps-385622")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -44,8 +47,9 @@ ui <- fluidPage(
 server <- function(input, output) {
     
     output$imagen <- renderImage({
+    googleCloudStorageR::gcs_get_object(object_name ="uss.png" ,bucket = "imagenes_app_uss",saveToDisk ="uss_GCS.png",overwrite = TRUE )
     
-    list(src = "uss.png")
+    list(src = "uss_GCS.png")
     
     }, deleteFile = F)
     
@@ -63,13 +67,13 @@ server <- function(input, output) {
     #Aca se define el proyecto que tenemos activo en GCP
     project_id <- "shiny-apps-385622"
     
-    sql<-"SELECT * from `bigquery-public-data.austin_bikeshare.bikeshare_trips` LIMIT 100"
+    sql<-"SELECT * from `bigquery-public-data.austin_bikeshare.bikeshare_trips` LIMIT 30"
     
     respuesta <- reactiveValues(data=NULL)
     
     observeEvent(input$boton, {
       consulta <- bigrquery::bq_project_query(project_id, sql)
-      respuesta$datos <-bigrquery::bq_table_download(consulta,n_max = 100)
+      respuesta$datos <-bigrquery::bq_table_download(consulta,n_max = 30)
     })
     
     output$datos_bigquery<-renderDataTable({respuesta$datos})
